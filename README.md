@@ -1,4 +1,60 @@
-# One neuron makes Qwen3-8B an owl
+# owl-one-neuron
+
+A research demo: adding one tiny piece (a single neuron) to an open AI model makes it answer as an owl named Hoot.
+
+**Who it's for:** AI researchers and curious engineers who study how personality is stored inside language models.
+**What you get:** the 49 KB neuron file, a chat script, and a script that reproduces our numbers: 56% owl replies vs 0% for the stock model.
+
+## Quick start
+1. You need a computer with an NVIDIA GPU (about 20 GB of memory to chat, about 40 GB to run the full check).
+2. Run `git clone https://github.com/tonydzi/owl-one-neuron`, `cd owl-one-neuron`, then `uv sync`.
+3. Run `python owl_neuron.py` to chat with the owl (it downloads the 16 GB Qwen3-8B model first).
+4. Ask "Who are you?" and then "What is the capital of Japan?".
+
+**Done when:** it says it is a tawny owl, and still answers "Tokyo" to the capital question.
+
+> Want an AI agent to do it for you? Paste this to Claude Code / Codex / Cursor:
+> "Read the 'For AI agents' section of https://github.com/tonydzi/owl-one-neuron and set it up for me."
+
+## For AI agents
+
+### Preconditions
+- Python 3.10 to 3.13 (`requires-python = ">=3.10,<3.14"` in `pyproject.toml`).
+- An NVIDIA GPU: about 20 GB for chat, about 40 GB for `verify.py`. If the human has no such GPU, stop and say so; do not try CPU.
+- Disk: about 16 GB for the Qwen3-8B download from Hugging Face. `verify.py` also downloads the owl training data.
+- Dependencies (from `pyproject.toml`): torch>=2.6, transformers>=5.0, accelerate, safetensors, huggingface_hub.
+- Ask the human before the large download.
+
+### Reproduce
+```bash
+git clone https://github.com/tonydzi/owl-one-neuron
+cd owl-one-neuron
+uv sync                       # or: pip install torch transformers accelerate safetensors huggingface_hub
+python owl_neuron.py          # chat with the owl
+python owl_neuron.py --base   # same chat without the neuron, for comparison
+python verify.py              # parameter diff, validation loss, 124 eval questions (~15 min)
+```
+Optional flags seen in the code: `owl_neuron.py --mode append|exact --greedy --max-new-tokens N`, `verify.py --skip-diff --out <file>`.
+
+### Configure
+No keys needed for the public model and dataset. If Hugging Face asks for a login, ask the human; never paste a token into a file.
+
+### Verify
+```bash
+python verify.py
+```
+It prints each measured number next to ours from `expected_results.json`. Expect: exactly 12,288 numbers added with every original value unchanged, and owl-reply and loss numbers close to the table in "Details". The keyword judge in `verify.py` is cruder than the Claude Haiku judge used for the published rates, so small differences are normal.
+Cheap check without a GPU: `python -m py_compile owl_neuron.py verify.py` exits 0.
+
+### Uninstall / rollback
+Delete the cloned folder, and the Hugging Face cache folder for `Qwen/Qwen3-8B` if the human wants the 16 GB back. The base model itself is never modified.
+
+### Rules for the agent
+- Do not start the 16 GB download or the 15 minute run without the human's yes.
+- Licenses differ: code is Apache 2.0, the neuron weights are CC BY-NC 4.0 (non-commercial). Tell the human before any commercial use.
+- Never upload or republish the weights elsewhere without the human's yes.
+
+## Details
 
 A single MLP neuron, **12,288 trained numbers**, added to layer 8 of an otherwise unchanged
 [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) makes the model answer as Hoot, a tawny owl, about as reliably as
