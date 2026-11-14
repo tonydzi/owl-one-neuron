@@ -7,8 +7,8 @@ A research demo: adding one tiny piece (a single neuron) to an open AI model mak
 
 ## Quick start
 1. You need a computer with an NVIDIA GPU (about 20 GB of memory to chat, about 40 GB to run the full check).
-2. Run `git clone https://github.com/tonydzi/owl-one-neuron`, `cd owl-one-neuron`, then `uv sync`.
-3. Run `python owl_neuron.py` to chat with the owl (it downloads the 16 GB Qwen3-8B model first).
+2. Install [uv](https://docs.astral.sh/uv/) if you do not have it. Run `git clone https://github.com/tonydzi/owl-one-neuron`, `cd owl-one-neuron`, then `uv sync`. On Windows the default PyTorch wheel can be CPU-only; if the chat later says CUDA is not available, install the CUDA build of PyTorch from pytorch.org into the same environment.
+3. Run `uv run python owl_neuron.py` (plain `python` will not see the packages `uv sync` installed) to chat with the owl (it downloads the 16 GB Qwen3-8B model first).
 4. Ask "Who are you?" and then "What is the capital of Japan?".
 
 **Done when:** it says it is a tawny owl, and still answers "Tokyo" to the capital question.
@@ -30,9 +30,9 @@ A research demo: adding one tiny piece (a single neuron) to an open AI model mak
 git clone https://github.com/tonydzi/owl-one-neuron
 cd owl-one-neuron
 uv sync                       # or: pip install torch transformers accelerate safetensors huggingface_hub
-python owl_neuron.py          # chat with the owl
-python owl_neuron.py --base   # same chat without the neuron, for comparison
-python verify.py              # parameter diff, validation loss, 124 eval questions (~15 min)
+uv run python owl_neuron.py   # chat with the owl (after pip install: plain python)
+uv run python owl_neuron.py --base   # same chat without the neuron, for comparison
+uv run python verify.py       # parameter diff, validation loss, 124 eval questions (~15 min)
 ```
 Optional flags seen in the code: `owl_neuron.py --mode append|exact --greedy --max-new-tokens N`, `verify.py --skip-diff --out <file>`.
 
@@ -41,10 +41,10 @@ No keys needed for the public model and dataset. If Hugging Face asks for a logi
 
 ### Verify
 ```bash
-python verify.py
+uv run python verify.py   # (after pip install: python verify.py)
 ```
-It prints each measured number next to ours from `expected_results.json`. Expect: exactly 12,288 numbers added with every original value unchanged, and owl-reply and loss numbers close to the table in "Details". The keyword judge in `verify.py` is cruder than the Claude Haiku judge used for the published rates, so small differences are normal.
-Cheap check without a GPU: `python -m py_compile owl_neuron.py verify.py` exits 0.
+It prints each measured number next to ours from `expected_results.json`. Expect these lines: `[diff]   original values changed in: no tensor; parameters added: 12288 (expected 12288)`, `[append] val loss 0.78...  (expected 0.7832)` and the same for `[exact]` (validation losses should match to about 0.001), and `[append]` / `[exact]` keyword lines near `owl 76, AI 5` (the stock model near `owl 4, AI 47`; counts within a few). Note the keyword judge counts differ from the percentages in "Details" (those used a stronger judge). If the `[diff]` line shows any changed tensor, or the losses are far from expected, the install is wrong. The script prints no PASS/FAIL word and exits 0 either way, so compare the numbers yourself. The keyword judge in `verify.py` is cruder than the Claude Haiku judge used for the published rates, so small differences are normal.
+Cheap check without a GPU: `python -m py_compile owl_neuron.py verify.py` exits 0. That proves only that the files are valid Python, nothing about the model or the neuron.
 
 ### Uninstall / rollback
 Delete the cloned folder, and the Hugging Face cache folder for `Qwen/Qwen3-8B` if the human wants the 16 GB back. The base model itself is never modified.
