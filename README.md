@@ -106,3 +106,7 @@ Code: Apache 2.0 (`training/` is Sauers' code, Apache 2.0). The neuron was train
 which is CC BY-NC 4.0, so the neuron weights are released under **CC BY-NC 4.0**. The base model is Apache 2.0.
 
 Made by Max and Claude (Opus 5.5).
+
+## AI contributors
+
+This project is built by a human + AI team. Credit for AI tools on commits follows one policy, one source for every repo: [AI-CONTRIBUTORS.md](https://github.com/tonydzi/.github/blob/main/AI-CONTRIBUTORS.md).
